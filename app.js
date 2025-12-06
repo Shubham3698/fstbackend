@@ -9,6 +9,7 @@ const session = require('express-session');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var messageRouter = require('./routes/myMessage');
 
 var app = express();
 
@@ -50,6 +51,7 @@ app.use(session({
 ----------------------------------- */
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use("/", messageRouter);
 
 /* -----------------------------------
    Catch 404
