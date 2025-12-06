@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <style>
+    body { font-family: Arial; text-align:center; margin-top:50px; }
+    button { padding: 15px 30px; margin: 10px; font-size:16px; cursor:pointer; border:none; color:white; border-radius:5px; }
+    .red { background-color:red; }
+    .blue { background-color:blue; }
+    .green { background-color:green; }
+    .reset { background-color:gray; }
+  </style>
+</head>
+<body>
+
+  <h1>Welcome <%= user.name %> 🎉</h1>
+
+  <h2>Click Counter Game</h2>
+  <p>Red: <%= game.red %> | Blue: <%= game.blue %> | Green: <%= game.green %></p>
+
+  <form method="POST" action="/users/dashboard/click" style="display:inline;">
+    <input type="hidden" name="color" value="red"/>
+    <button type="submit" class="red">Red</button>
+  </form>
+
+  <form method="POST" action="/users/dashboard/click" style="display:inline;">
+    <input type="hidden" name="color" value="blue"/>
+    <button type="submit" class="blue">Blue</button>
+  </form>
+
+  <form method="POST" action="/users/dashboard/click" style="display:inline;">
+    <input type="hidden" name="color" value="green"/>
+    <button type="submit" class="green">Green</button>
+  </form>
+
+  <form method="POST" action="/users/dashboard/reset" style="margin-top:20px;">
+    <button type="submit" class="reset">Reset</button>
+  </form>
+
+  <p><a href="/users/logout">Logout</a></p>
+</body>
+</html>
