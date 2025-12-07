@@ -16,7 +16,8 @@ var app = express();
 const mongoose = require("mongoose");
 async function connectDB() {
   try {
-    await mongoose.connect("mongodb+srv://shubham123:pandey123@cluster0.lzs2dru.mongodb.net/fstback", {
+    const mongoURI = process.env.MONGO_URI; // Environment variable
+    await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
@@ -63,3 +64,9 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+
+// Start server using PORT environment variable (important for Render)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
