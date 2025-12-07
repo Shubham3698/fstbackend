@@ -14,12 +14,14 @@ var messageRouter = require('./routes/myMessage');
 var app = express();
 
 /* -----------------------------------
-   MongoDB Connection (Mongoose v9+)
+   MongoDB Connection
 ----------------------------------- */
 mongoose
-  .connect(process.env.MONGO_URL)
+  .connect(process.env.MONGO_URL, {
+    serverSelectionTimeoutMS: 5000,
+  })
   .then(() => console.log("✔ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Error:", err));
+  .catch((err) => console.log("❌ MongoDB Error:", err.message));
 
 /* -----------------------------------
    View Engine Setup
@@ -34,25 +36,26 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
+
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(cors({
-  origin: "*"
-}));
-
-/* -----------------------------------
-   REMOVE sessions for production
------------------------------------ */
-// ❌ Remove express-session completely
-// ❌ No MemoryStore 
-// ❌ No session crashes on mobile
 
 /* -----------------------------------
    Routes
 ----------------------------------- */
+app.get("/test", (req, res) => {
+  res.json({ success: true, msg: "Backend Running Successfully!" });
+});
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use("/", messageRouter);
+app.use('/message', messageRouter);
 
 /* -----------------------------------
    Catch 404
@@ -65,6 +68,15 @@ app.use(function (req, res, next) {
    Error Handler
 ----------------------------------- */
 app.use(function (err, req, res, next) {
+  console.error("❌ ERROR:", err.message);
+
+  if (req.xhr || req.headers.accept?.includes("json")) {
+    return res.status(err.status || 500).json({
+      success: false,
+      message: err.message || "Something went wrong",
+    });
+  }
+
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
