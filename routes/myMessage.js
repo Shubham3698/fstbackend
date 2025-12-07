@@ -1,16 +1,8 @@
-var express = require("express");
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-const Message = require("../models/Message");
-
-// Ye route database me se first message laayega
-router.get("/get-message", async (req, res) => {
-  try {
-    const msg = await Message.findOne(); // pehla message
-    res.json({ success: true, message: msg.text });
-  } catch (err) {
-    res.json({ success: false, message: "Error fetching message" });
-  }
+router.get('/get-message', (req, res) => {
+  res.json({ message: "Hello from backend!" });
 });
 
 module.exports = router;
