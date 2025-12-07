@@ -5,7 +5,6 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const session = require('express-session');
 require('dotenv').config();
 
 var indexRouter = require('./routes/index');
@@ -15,11 +14,11 @@ var messageRouter = require('./routes/myMessage');
 var app = express();
 
 /* -----------------------------------
-   MongoDB Connection (Mongoose v9)
+   MongoDB Connection (Mongoose v9+)
 ----------------------------------- */
 mongoose
-  .connect(process.env.MONGO_URL)   // ❌ No deprecated options
-  .then(() => console.log("✔ MongoDB Connected to : ", process.env.MONGO_URL))
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("✔ MongoDB Connected"))
   .catch((err) => console.log("❌ MongoDB Error:", err));
 
 /* -----------------------------------
@@ -38,18 +37,15 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors({
-  origin: "*",
-  credentials: true
+  origin: "*"
 }));
 
 /* -----------------------------------
-   Session Setup
+   REMOVE sessions for production
 ----------------------------------- */
-app.use(session({
-  secret: process.env.SESSION_SECRET || "defaultsecret",
-  resave: false,
-  saveUninitialized: true
-}));
+// ❌ Remove express-session completely
+// ❌ No MemoryStore 
+// ❌ No session crashes on mobile
 
 /* -----------------------------------
    Routes
