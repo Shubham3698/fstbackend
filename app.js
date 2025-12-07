@@ -6,6 +6,7 @@ var logger = require('morgan');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
+require('dotenv').config();   // <-- ADD THIS
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -14,10 +15,13 @@ var messageRouter = require('./routes/myMessage');
 var app = express();
 
 /* -----------------------------------
-   MongoDB Atlas Connection
+   MongoDB ENV BASED Connection
 ----------------------------------- */
 mongoose
-  .connect("mongodb+srv://gumaan123:pandey123@cluster0.i7mlf8k.mongodb.net/fstdb")
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("✔ MongoDB Connected"))
   .catch((err) => console.log("❌ MongoDB Error:", err));
 
@@ -35,13 +39,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
+
+app.use(cors({
+  origin: "*",
+  credentials: true
+}));
 
 /* -----------------------------------
    Session Setup
 ----------------------------------- */
 app.use(session({
-  secret: "supersecretkey",
+  secret: process.env.SESSION_SECRET || "defaultsecret",
   resave: false,
   saveUninitialized: true
 }));
