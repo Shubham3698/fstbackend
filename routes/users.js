@@ -1,80 +1,53 @@
 var express = require('express');
 var router = express.Router();
-const bcrypt = require('bcrypt');
-const User = require('../models/User');
-const Game = require('../models/Game');
+const User = require("../models/user"); // file name lowercase
+const bcrypt = require("bcryptjs");
 
-/* Middleware to protect routes */
-function isLoggedIn(req, res, next) {
-  if (req.session && req.session.user) {
-    next();
-  } else {
+// Register page
+router.get("/register", (req, res) => {
+  res.render("register");
+});
+
+// Register user
+router.post("/register", async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    await User.create({ 
+      name: req.body.name, 
+      email: req.body.email, 
+      password: hashedPassword 
+    });
     res.redirect("/users/login");
+  } catch (err) {
+    res.send("Error: " + err);
   }
-}
-
-/* -------- Register -------- */
-router.get('/register', (req, res) => {
-  res.render('register');
 });
 
-router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
-  const hashed = await bcrypt.hash(password, 10);
-  const user = new User({ name, email, password: hashed });
-  await user.save();
-  res.redirect('/users/login');
+// Login page
+router.get("/login", (req, res) => {
+  res.render("login");
 });
 
-/* -------- Login -------- */
-router.get('/login', (req, res) => {
-  res.render('login');
-});
-
-router.post('/login', async (req, res) => {
+// Login user
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
+
   const user = await User.findOne({ email });
-  if (!user) return res.redirect('/users/login');
+  if (!user) return res.send("User not found");
 
   const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.redirect('/users/login');
+  if (!match) return res.send("Incorrect password");
 
-  req.session.user = user;
-  res.redirect('/users/dashboard');
+  // IMPORTANT: session me user set karna
+  req.session.user = user; 
+  res.redirect("/dashboard");
 });
 
-/* -------- Logout -------- */
-router.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/');
-});
-
-/* -------- Dashboard + Game -------- */
-router.get("/dashboard", isLoggedIn, async (req, res) => {
-  let game = await Game.findOne({ userId: req.session.user._id });
-  if (!game) game = await Game.create({ userId: req.session.user._id });
-  res.render("dashboard", { user: req.session.user, game });
-});
-
-router.post("/dashboard/click", isLoggedIn, async (req, res) => {
-  const { color } = req.body;
-  const game = await Game.findOne({ userId: req.session.user._id });
-
-  if (color === "red") game.red += 1;
-  if (color === "blue") game.blue += 1;
-  if (color === "green") game.green += 1;
-
-  await game.save();
-  res.redirect("/users/dashboard");
-});
-
-router.post("/dashboard/reset", isLoggedIn, async (req, res) => {
-  const game = await Game.findOne({ userId: req.session.user._id });
-  game.red = 0;
-  game.blue = 0;
-  game.green = 0;
-  await game.save();
-  res.redirect("/users/dashboard");
+// Logout
+router.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/users/login");
+  });
 });
 
 module.exports = router;

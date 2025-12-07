@@ -1,35 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Welcome Home</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 100px;
-      background-color: #f5f5f5;
-    }
-    a {
-      display: inline-block;
-      margin: 10px;
-      padding: 10px 20px;
-      background-color: #ff4d4d;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-    a:hover {
-      background-color: #e60000;
-    }
-  </style>
-</head>
-<body>
+// routes/index.js
+router.get('/dashboard', (req, res) => {
+  // Check if user is logged in
+  if (!req.session.user) {
+    return res.redirect('/users/login');
+  }
 
-  <h1>Welcome to Our App! 👋</h1>
-  <p>Please login to continue.</p>
+  // Initialize game if not present
+  if (!req.session.game) {
+    req.session.game = { red: 0, blue: 0, green: 0 };
+  }
 
-  <a href="/users/login">Login</a>
-  <a href="/users/register">Register</a>
-
-</body>
-</html>
+  res.render('dashboard', {
+    user: req.session.user,
+    game: req.session.game // <-- ye line important hai
+  });
+});

@@ -3,77 +3,61 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const session = require('express-session');
-require('dotenv').config();
+const cors = require("cors");
+const session = require("express-session");
+require("dotenv").config();
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var messageRouter = require('./routes/myMessage');
 
 var app = express();
 
-/* -----------------------------------
-   MongoDB Connection (Mongoose v9+)
------------------------------------ */
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => console.log("✔ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Error:", err));
+// MongoDB Connection
+const mongoose = require("mongoose");
+async function connectDB() {
+  try {
+    await mongoose.connect("mongodb+srv://shubham123:pandey123@cluster0.lzs2dru.mongodb.net/fstback", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log("MongoDB Connected ✔");
+  } catch (error) {
+    console.error("MongoDB Connection Error ❌", error);
+  }
+}
+connectDB();
 
-/* -----------------------------------
-   View Engine Setup
------------------------------------ */
+// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-/* -----------------------------------
-   Middlewares
------------------------------------ */
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(cors({
-  origin: "*",
-  credentials: true
-}));
-
-/* -----------------------------------
-   Session Setup
------------------------------------ */
+// session
 app.use(session({
-  name: "fstback.sid",
-  secret: process.env.SESSION_SECRET || "defaultsecret",
+  secret: "shubham123",
   resave: false,
-  saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === "production", maxAge: 1000 * 60 * 60 * 24 } // 1 day
+  saveUninitialized: true,
 }));
 
-/* -----------------------------------
-   Routes
------------------------------------ */
+// Routes
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use("/", messageRouter);
 
-/* -----------------------------------
-   Catch 404
------------------------------------ */
-app.use(function (req, res, next) {
-  next(createError(404));
+// 404 handler
+app.use(function(req, res, next) {
+  res.status(404).send("Page Not Found");
 });
 
-/* -----------------------------------
-   Error Handler
------------------------------------ */
-app.use(function (err, req, res, next) {
+// Error handler
+app.use(function(err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
   res.status(err.status || 500);
   res.render('error');
 });
