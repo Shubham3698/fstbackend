@@ -6,7 +6,7 @@ var logger = require('morgan');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
-require('dotenv').config();   // <-- ADD THIS
+require('dotenv').config();
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -15,14 +15,11 @@ var messageRouter = require('./routes/myMessage');
 var app = express();
 
 /* -----------------------------------
-   MongoDB ENV BASED Connection
+   MongoDB Connection (Mongoose v9)
 ----------------------------------- */
 mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("✔ MongoDB Connected"))
+  .connect(process.env.MONGO_URL)   // ❌ No deprecated options
+  .then(() => console.log("✔ MongoDB Connected to : ", process.env.MONGO_URL))
   .catch((err) => console.log("❌ MongoDB Error:", err));
 
 /* -----------------------------------
